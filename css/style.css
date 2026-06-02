@@ -1,0 +1,594 @@
+:root {
+    /* Palette Colori */
+    --bg-color: #000000;
+    --surface-color: #1a1a1a;
+    --primary-color: #00e5ff;
+    --secondary-color: #7c3aed;
+    --text-color: #f5f5f5;
+    --muted-color: #666666;
+    --success-color: #00e5ff;
+    /* Usiamo il ciano per il successo/scan */
+}
+
+/* --- Base & Resets --- */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+header h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 30px;
+    letter-spacing: 1px;
+    text-align: center;
+}
+
+/* --- Container e Viste --- */
+#app-container {
+    width: 100%;
+    /* Occupa tutta la larghezza su mobile, ma evita di sbordare verticalmente su laptop landscape */
+    max-width: min(100%, calc(100vh - 120px));
+    background-color: var(--surface-color);
+    border-radius: 16px;
+    padding: 10px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+}
+
+.view {
+    display: none;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.view.active {
+    display: flex;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.hidden {
+    display: none !important;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* --- Componenti Header Interni --- */
+.header-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    border-bottom: 1px solid #333;
+    padding-bottom: 15px;
+    min-height: 50px;
+}
+
+.header-title-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-bar h2 {
+    font-size: 1.2rem;
+}
+
+/* Absolute center the switcher button in both sending and receiving views */
+.header-bar .mode-selector-pill {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 0;
+    padding: 2px;
+    background: rgba(26, 26, 46, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    z-index: 10;
+}
+
+.header-bar .mode-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 16px;
+}
+
+/* --- Bottoni --- */
+button {
+    cursor: pointer;
+    border: none;
+    outline: none;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: transform 0.1s, filter 0.2s;
+}
+
+button:active {
+    transform: scale(0.97);
+}
+
+.btn {
+    width: 100%;
+    padding: 18px;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: #fff;
+    border-radius: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: all 0.2s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+.btn .icon {
+    font-size: 1.3rem;
+}
+
+.btn.primary {
+    background-color: #10b981;
+    color: #fff;
+    border: none;
+    box-shadow: none;
+}
+
+.btn.primary:hover {
+    background-color: #059669;
+    filter: none;
+    box-shadow: none;
+}
+
+.btn.secondary {
+    background-color: #0ea5e9;
+    color: #fff;
+    border: none;
+    box-shadow: none;
+}
+
+.btn.secondary:hover {
+    background-color: #0284c7;
+    filter: none;
+    box-shadow: none;
+}
+
+.btn-back {
+    background: rgba(255, 255, 255, 0.05);
+    color: #e0e0e0;
+    font-size: 0.95rem;
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.btn-back:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+/* --- SENDER: Input File --- */
+.file-input-wrapper input[type="file"] {
+    display: none;
+}
+
+.btn-file {
+    display: block;
+    width: 100%;
+    text-align: center;
+    background-color: #333;
+    color: var(--text-color);
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    border: 1px dashed var(--muted-color);
+}
+
+/* --- Testi --- */
+.muted-text {
+    color: var(--muted-color);
+    font-size: 0.85rem;
+    text-align: center;
+    word-break: break-all;
+}
+
+.highlight-text {
+    font-weight: 600;
+    color: var(--primary-color);
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+/* --- SENDER: QR Code --- */
+.qr-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#qr-canvas-wrapper {
+    background-color: #ffffff;
+    /* Sfondo bianco obbligatorio per scan */
+    padding: 2px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* Occupa tutta la larghezza disponibile */
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    overflow: hidden; /* evita che il canvas fuoriesca e sovrapponga i controlli */
+    box-shadow: 0 0 20px rgba(0, 229, 255, 0.1);
+}
+
+/* Il canvas/img generato da qrcode.js si adatta al wrapper */
+#qr-canvas-wrapper canvas,
+#qr-canvas-wrapper img {
+    max-width: 100% !important;
+    max-height: 100% !important;
+    width: auto !important;
+    height: auto !important;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    display: block;
+}
+
+.text-input {
+    width: 100%;
+    height: 100%;
+    border: none;
+    resize: none;
+    padding: 20px;
+    font-size: 1.1rem;
+    line-height: 1.5;
+    text-align: center;
+    background: transparent;
+    color: #000;
+    outline: none;
+    font-family: inherit;
+}
+.text-input::placeholder {
+    color: #888;
+}
+
+.placeholder-text {
+    color: #999;
+    font-size: 0.9rem;
+}
+
+/* --- SENDER: Controlli Slider --- */
+.controls {
+    background: #222;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 15px;
+}
+
+.sliders-container {
+    display: flex;
+    gap: 15px;
+    margin-top: 5px;
+}
+
+.slider-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 0.85rem;
+}
+
+input[type="range"] {
+    width: 100%;
+    accent-color: var(--primary-color);
+}
+
+/* --- RECEIVER: Viewfinder (Fotocamera) --- */
+.viewfinder-container {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background-color: #000;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+#video-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+#scan-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 400px;
+    max-width: 90%;
+    aspect-ratio: 1 / 1;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    pointer-events: none;
+    transition: box-shadow 0.1s ease;
+}
+
+
+
+/* Animazione di scan avvenuto con successo */
+.scan-pulse-green {
+    box-shadow: inset 0 0 0 6px var(--success-color) !important;
+    border-color: var(--success-color) !important;
+}
+
+.scan-pulse-gray {
+    box-shadow: inset 0 0 0 6px var(--muted-color) !important;
+    border-color: var(--muted-color) !important;
+}
+
+/* --- RECEIVER: Progress Bar --- */
+.progress-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.progress-bar-wrapper {
+    width: 100%;
+    height: 12px;
+    background-color: #333;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+#progress-bar {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    transition: width 0.2s ease-out;
+}
+
+#receive-status {
+    font-weight: 500;
+    font-size: 0.95rem;
+    text-align: center;
+}
+
+/* --- MODAL ABOUT --- */
+.modal {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal.hidden {
+    display: none !important;
+}
+
+.modal-content {
+    background-color: var(--surface-color);
+    padding: 25px;
+    border-radius: 16px;
+    max-width: 90%;
+    width: 350px;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+    border: 1px solid #333;
+}
+
+.close-modal {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    color: var(--muted-color);
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.close-modal:hover {
+    color: #fff;
+}
+
+/* --- Visualizzatore Acustico (Sound Mode) --- */
+.sound-visualizer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background-color: #0b0f19;
+    border-radius: 8px;
+    position: relative;
+    box-shadow: 0 0 20px rgba(0, 229, 255, 0.1);
+    overflow: hidden;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.pulse-orb {
+    width: 90px;
+    height: 90px;
+    background: radial-gradient(circle, #333 0%, #111 100%);
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
+    transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+/* Orb state: actively detecting audio (amplitude above threshold) */
+.pulse-orb.listening {
+    background: radial-gradient(circle, var(--primary-color) 0%, var(--secondary-color) 100%);
+    box-shadow: 0 0 30px rgba(0, 229, 255, 0.5);
+    animation: listeningPulse 1.5s infinite ease-in-out;
+}
+
+/* Orb state: a ggwave packet was just decoded */
+.pulse-orb.pulse-active {
+    background: radial-gradient(circle, #fff 0%, var(--primary-color) 100%) !important;
+    box-shadow: 0 0 60px rgba(79, 255, 176, 0.9) !important;
+    transform: scale(1.2) !important;
+    animation: none !important;
+}
+
+@keyframes listeningPulse {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 20px rgba(0, 229, 255, 0.3);
+    }
+    50% {
+        transform: scale(1.07);
+        box-shadow: 0 0 45px rgba(0, 229, 255, 0.7);
+    }
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 20px rgba(0, 229, 255, 0.3);
+    }
+}
+
+.static-audio-wave {
+    width: 140px;
+    height: 60px;
+    color: var(--primary-color);
+    margin-top: 30px;
+    stroke: var(--primary-color);
+    filter: drop-shadow(0 0 8px rgba(79, 255, 176, 0.4));
+}
+
+.sound-status-text {
+    font-size: 0.9rem;
+    color: var(--primary-color);
+    margin-top: 20px;
+    font-weight: 500;
+    text-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
+    text-align: center;
+}
+
+.sound-warning-box {
+    margin-top: 15px;
+    background-color: rgba(255, 204, 0, 0.15);
+    border: 1px solid rgba(255, 204, 0, 0.4);
+    border-radius: 8px;
+    padding: 10px 15px;
+    max-width: 90%;
+    text-align: center;
+}
+
+.sound-warning-text {
+    color: #ffcc00;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* visualizer styles in the receiver view when audio active */
+.receiver-acoustic-visualizer {
+    background-color: #0b0f19;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 10;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+/* --- Pill Mode Selectors --- */
+.mode-selector-pill {
+    display: inline-flex;
+    background: rgba(26, 26, 46, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 30px;
+    padding: 4px;
+    margin: 10px auto 20px auto;
+    backdrop-filter: blur(8px);
+    width: fit-content;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.mode-btn {
+    background: transparent;
+    border: none;
+    border-radius: 25px;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #8a8fb5;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
+}
+
+.mode-btn:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.mode-btn.active {
+    color: #0f0f0f;
+    background: var(--primary-color);
+    box-shadow: 0 4px 15px rgba(79, 255, 176, 0.4);
+}
+
+.mode-btn.mic-active.active {
+    background: var(--primary-color);
+    color: #0f0f0f;
+    box-shadow: 0 4px 15px rgba(79, 255, 176, 0.4);
+}
+
+.mode-btn.cam-active.active {
+    background: #00e5ff;
+    color: #0f0f0f;
+    box-shadow: 0 4px 15px rgba(0, 229, 255, 0.4);
+}
+
+.mode-icon {
+    transition: transform 0.2s ease;
+}
+
+.mode-btn:active .mode-icon {
+    transform: scale(0.9);
+}

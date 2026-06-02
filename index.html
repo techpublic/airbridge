@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AirBridge</title>
+
+    <!-- PWA Manifest & Theme -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0f0f0f">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="AirBridge">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <main id="app-container">
+
+        <!-- VISTA 1: HOME (Scelta dell'azione) -->
+        <section id="view-home" class="view active">
+            <header>
+                <h1><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: text-bottom; margin-right: 6px;"><path d="M12 2v20M17 5v14M22 9v6M7 5v14M2 9v6"></path></svg>AirBridge</h1>
+            </header>
+            <p class="app-version-display" style="text-align: center; color: #666; margin-top: -20px; margin-bottom: 20px; font-size: 0.85rem;"></p>
+
+            <button id="btn-go-sender" class="btn primary">
+                <span class="icon">📤</span> <span data-i18n="btn_send">Invia</span>
+            </button>
+            <button id="btn-go-receiver" class="btn secondary">
+                <span class="icon">📥</span> <span data-i18n="btn_receive">Ricevi</span>
+            </button>
+            <button id="btn-about" class="btn-back" style="margin-top: 20px; text-decoration: underline;" data-i18n="btn_about">
+                ℹ️ About / Credits
+            </button>
+        </section>
+
+        <!-- VISTA 2: SENDER (Invia) -->
+        <section id="view-sender" class="view hidden">
+            <div class="header-bar">
+                <button class="btn-back" id="sender-back" data-i18n="btn_back">← Indietro</button>
+                <div class="header-title-group">
+                    <h2 data-i18n="title_send">Invia</h2>
+                    <div class="mode-selector-pill" id="sender-mode-selector">
+                        <button type="button" class="mode-btn active cam-active" id="btn-sender-qr" title="QR Code Mode">
+                            <svg class="mode-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                        </button>
+                        <button type="button" class="mode-btn" id="btn-sender-sound" title="Sound Mode">
+                            <svg class="mode-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input per selezionare il file -->
+            <div class="file-input-wrapper" id="file-input-wrapper">
+                <input type="file" id="file-input" />
+                <label for="file-input" class="btn-file" data-i18n="label_choose_file">Scegli un file...</label>
+            </div>
+
+            <p id="file-info" class="muted-text" data-i18n="no_file_selected">Nessun file selezionato</p>
+
+            <!-- Contenitore del QR Code -->
+            <div class="qr-container">
+                <div id="qr-canvas-wrapper">
+                    <!-- qrcode.js inietterà qui il canvas -->
+                    <textarea id="text-input" class="text-input" placeholder="... oppure incolla direttamente qui il testo che vuoi inviare." data-i18n="placeholder_text"></textarea>
+                </div>
+                <!-- Visualizzatore Acustico (Sound Mode) — STATIC AUDIO WAVE -->
+                <div id="sound-visualizer" class="sound-visualizer hidden">
+                    <div class="pulse-orb"></div>
+                    <svg class="static-audio-wave" viewBox="0 0 100 40" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <line x1="10" y1="20" x2="10" y2="20" />
+                        <line x1="18" y1="15" x2="18" y2="25" />
+                        <line x1="26" y1="10" x2="26" y2="30" />
+                        <line x1="34" y1="5" x2="34" y2="35" />
+                        <line x1="42" y1="12" x2="42" y2="28" />
+                        <line x1="50" y1="2" x2="50" y2="38" />
+                        <line x1="58" y1="8" x2="58" y2="32" />
+                        <line x1="66" y1="15" x2="66" y2="25" />
+                        <line x1="74" y1="5" x2="74" y2="35" />
+                        <line x1="82" y1="12" x2="82" y2="28" />
+                        <line x1="90" y1="20" x2="90" y2="20" />
+                    </svg>
+                    <p class="sound-status-text" id="sound-status-text" data-i18n="sound_sending">Trasmissione frammenti audio...</p>
+                    <div class="sound-warning-box">
+                        <p class="sound-warning-text" data-i18n="sound_warning">⚠️ Assicurati che 'Modalità Silenzioso' sia OFF e il Volume sia ALTO</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controlli QR (FPS e Info Chunk) — SEMPRE SOTTO al QR -->
+            <div class="controls hidden" id="sender-controls">
+                <p id="chunk-info" class="highlight-text" data-i18n="sending_progress">Invio in corso...</p>
+                <div class="sliders-container">
+                    <div class="slider-wrapper">
+                        <label for="fps-slider"><span data-i18n="label_speed">Velocità:</span> <span id="fps-value">15</span> fps</label>
+                        <input type="range" id="fps-slider" min="1" max="30" value="15">
+                    </div>
+                    <div class="slider-wrapper">
+                        <label for="density-slider"><span data-i18n="label_density">Densità:</span> <span id="density-value">450</span> B</label>
+                        <input type="range" id="density-slider" min="100" max="1000" step="50" value="450">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controlli Audio (Velocità) — MOSTRATO SOLO IN AUDIO MODE -->
+            <div class="controls hidden" id="audio-sender-controls">
+                <div class="slider-wrapper" style="max-width: 300px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center;">
+                    <label for="audio-speed-slider" style="font-weight: 500;">
+                        <span data-i18n="label_audio_speed">Velocità Audio:</span> <span id="audio-speed-value" class="highlight-text" data-i18n="speed_ultrasonic">Ultrasuoni</span>
+                    </label>
+                    <input type="range" id="audio-speed-slider" min="1" max="4" value="4" style="width: 100%;">
+                </div>
+            </div>
+        </section>
+
+        <!-- VISTA 3: RECEIVER (Ricevi) -->
+        <section id="view-receiver" class="view hidden">
+            <div class="header-bar">
+                <button class="btn-back" id="receiver-back" data-i18n="btn_back">← Indietro</button>
+                <div class="header-title-group">
+                    <h2 data-i18n="title_receive">Ricevi</h2>
+                    <div class="mode-selector-pill" id="receiver-mode-selector">
+                        <button type="button" class="mode-btn" id="btn-receiver-camera" title="Camera QR Mode">
+                            <svg class="mode-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                        </button>
+                        <button type="button" class="mode-btn" id="btn-receiver-mic" title="Microphone Sound Mode">
+                            <svg class="mode-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fotocamera -->
+            <div class="viewfinder-container">
+                <video id="video-preview" playsinline webkit-playsinline autoplay muted></video>
+                <div id="scan-overlay"></div>
+            </div>
+
+            <!-- Progresso della ricezione -->
+            <div class="progress-container">
+                <div class="progress-bar-wrapper">
+                    <div id="progress-bar"></div>
+                </div>
+                <p id="receive-status">Inizializzazione fotocamera...</p>
+                <p id="receive-stats" class="muted-text">0%</p>
+            </div>
+        </section>
+
+        <!-- MODALE ABOUT -->
+        <div id="about-modal" class="modal hidden">
+            <div class="modal-content">
+                <span class="close-modal" id="close-about">&times;</span>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h2 style="margin: 0;">About AirBridge <span class="app-version-display" style="font-size: 0.8rem; color: #666; font-weight: normal;"></span></h2>
+                    <select id="langSwitcher" style="background: #1a1a2e; color: #4fffb0; border: 1px solid #4fffb0; border-radius: 5px; padding: 4px 8px; font-size: 0.9rem;">
+                        <option value="en">English</option>
+                        <option value="it">Italiano</option>
+                        <option value="es">Español</option>
+                    </select>
+                </div>
+                
+                <p style="margin-top: 10px; font-size: 0.9rem; color: #ccc;" data-i18n="about_mit">This software is provided "AS IS" under the MIT License.</p>
+                <h3 style="margin-top: 15px; font-size: 1rem; color: #00e5ff;" data-i18n="about_credits">Open Source Credits:</h3>
+                <ul style="text-align: left; padding-left: 20px; font-size: 0.85rem; margin-top: 10px; color: #ccc; line-height: 1.6;">
+                    <li><strong>ZBar WASM</strong> (LGPL) - Barcode scanning</li>
+                    <li><strong>BC-UR</strong> (BSD) - Fountain code UR</li>
+                    <li><strong>Pako</strong> (MIT) - High-speed compression</li>
+                    <li><strong>QRCode.js</strong> (MIT) - QR Code generation</li>
+                    <li><strong>ggwave WASM</strong> (MIT) - Acoustic data transfer</li>
+                </ul>
+
+                <h3 style="margin-top: 15px; font-size: 1rem; color: #00e5ff;" data-i18n="about_privacy_title">Privacy Policy:</h3>
+                <p style="margin-top: 5px; font-size: 0.85rem; color: #ccc; line-height: 1.4;" data-i18n="about_privacy_text">This app works entirely offline. Files are processed locally on your device and are never uploaded to any server. The app is hosted on GitHub Pages, which may record basic visitor logs (such as IP addresses) in accordance with GitHub's privacy policy. We do not use any tracking cookies or third-party analytics.</p>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Librerie esterne organizzate in libs/ -->
+    <script src="libs/pako/pako.min.js"></script>
+    <script src="libs/bc-ur/bc-ur.js"></script>
+    <script src="libs/qrcode/qrcode.min.js"></script>
+    <script src="libs/ggwave/ggwave.js"></script>
+
+    <!-- Logica dell'app -->
+    <script src="js/locales.js"></script>
+    <script src="js/app.js"></script>
+
+    <!-- Registrazione Service Worker in linea per PWA -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Service Worker registrato!', reg.scope))
+                    .catch(err => console.error('Errore Service Worker:', err));
+            });
+        }
+    </script>
+</body>
+
+</html>
